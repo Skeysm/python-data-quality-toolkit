@@ -1,4 +1,5 @@
 
+import re
 from typing import Any
 
 
@@ -35,6 +36,43 @@ def validate_required_fields(
                     "field": field,
                     "error": "missing_required_field",
                     "message": f"Required field '{field}' is missing or empty.",
+                })
+
+    return issues
+
+
+EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+
+
+def validate_email_format(
+    records: list[dict[str, Any]],
+    email_fields: list[str],
+) -> list[dict[str, Any]]:
+    """
+    Validate the format of email addresses.
+
+    Missing or empty values are ignored because they are
+    handled separately by validate_required_fields().
+    """
+
+    issues = []
+
+    for row_number, record in enumerate(records, start=1):
+        for field in email_fields:
+            value = record.get(field)
+
+            # Missing values are handled by required-field validation.
+            if value is None or (
+                isinstance(value, str) and not value.strip()
+            ):
+                continue
+
+            if not isinstance(value, str) or not EMAIL_PATTERN.fullmatch(value):
+                issues.append({
+                    "row": row_number,
+                    "field": field,
+                    "error": "invalid_email",
+                    "message": f"Field '{field}' contains an invalid email address.",
                 })
 
     return issues

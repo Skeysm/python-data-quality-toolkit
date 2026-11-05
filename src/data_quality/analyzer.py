@@ -1,5 +1,6 @@
 from typing import Any
 
+
 def count_missing_values(records):
     missing_counts = {}
 

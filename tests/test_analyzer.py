@@ -1,5 +1,10 @@
-from data_quality.analyzer import analyze_columns
 import pytest
+
+from data_quality.analyzer import (
+    analyze_columns,
+    count_missing_values,
+)
+
 
 def test_analyze_columns():
     records = [
@@ -97,3 +102,38 @@ def test_unhashable_values_raise_clear_error():
 
     with pytest.raises(TypeError, match="Column 'name'"):
         analyze_columns(records)
+
+
+def test_count_missing_values():
+    records = [
+        {"name": "Alice", "age": 28},
+        {"name": "Bob", "age": None},
+        {"name": "Charlie"},
+    ]
+
+    result = count_missing_values(records)
+
+    assert result == {
+        "name": 0,
+        "age": 2,
+    }
+
+
+def test_count_missing_values_with_multiple_columns():
+    records = [
+        {"name": "Alice", "age": 28, "city": "Paris"},
+        {"name": "Bob", "age": None},
+        {"name": "Charlie", "city": None},
+    ]
+
+    result = count_missing_values(records)
+
+    assert result == {
+        "name": 0,
+        "age": 2,
+        "city": 2,
+    }
+
+
+def test_count_missing_values_empty_dataset():
+    assert count_missing_values([]) == {}

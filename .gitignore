@@ -3,3 +3,11 @@ __pycache__/
 .venv/
 .pytest_cache/
 .coverage
+
+# Python package build artifacts
+*.egg-info/
+build/
+dist/
+
+# Editor
+.vscode/

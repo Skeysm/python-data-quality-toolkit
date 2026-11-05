@@ -1,3 +1,5 @@
+from typing import Any
+
 def count_missing_values(records):
     missing_counts = {}
 
@@ -15,7 +17,7 @@ def count_missing_values(records):
 
     return missing_counts
 
-def analyze_columns(records):
+def analyze_columns(records: list[dict[str, Any]]) -> dict:
     """
     Analyze each column in a dataset.
 
@@ -26,11 +28,12 @@ def analyze_columns(records):
     if not records:
         return {}
 
-    # Step 1: Discover all columns
-    columns = set()
-
-    for record in records:
-        columns.update(record.keys())
+    # Step 1: Discover columns while preserving their order
+    columns = dict.fromkeys(
+        key
+        for record in records
+        for key in record
+    )
 
     # Step 2: Initialize statistics
     column_stats = {}
@@ -55,7 +58,14 @@ def analyze_columns(records):
                 column_stats[column]["missing"] += 1
             else:
                 column_stats[column]["present"] += 1
-                unique_values.add(value)
+
+                try:
+                    unique_values.add(value)
+                except TypeError as error:
+                    raise TypeError(
+                        f"Column '{column}' contains an "
+                        f"unhashable value: {value!r}"
+                    ) from error
 
         # Step 4: Calculate statistics
         stats = column_stats[column]

@@ -1,6 +1,7 @@
 
 from data_quality.validation import (
     validate_email_format,
+    validate_numeric_range,
     validate_required_fields,
 )
 
@@ -109,3 +110,56 @@ def test_missing_email_is_not_reported_twice():
     result = validate_email_format(records, ["email"])
 
     assert result == []
+
+
+def test_valid_numeric_range():
+    assert validate_numeric_range(25, "age", 18, 100) is None
+
+
+def test_value_below_minimum():
+    error = validate_numeric_range(15, "age", 18, 100)
+
+    assert "below" in error
+
+
+def test_value_above_maximum():
+    error = validate_numeric_range(120, "age", 18, 100)
+
+    assert "exceeds" in error
+
+
+def test_value_equal_to_minimum():
+    assert validate_numeric_range(18, "age", 18, 100) is None
+
+
+def test_value_equal_to_maximum():
+    assert validate_numeric_range(100, "age", 18, 100) is None
+
+
+def test_invalid_numeric_type():
+    error = validate_numeric_range("abc", "age", 18, 100)
+
+    assert "not numeric" in error
+
+
+def test_boolean_is_not_numeric():
+    error = validate_numeric_range(True, "age", 18, 100)
+
+    assert "not numeric" in error
+
+
+def test_infinite_value():
+    error = validate_numeric_range(float("inf"), "price", 0)
+
+    assert "not finite" in error
+
+def test_nan_value():
+    error = validate_numeric_range(float("nan"), "price", 0)
+
+    assert "not finite" in error
+
+
+def test_value_without_line_number():
+    error = validate_numeric_range(5, "age", 18)
+
+    assert error.startswith("Field 'age'")

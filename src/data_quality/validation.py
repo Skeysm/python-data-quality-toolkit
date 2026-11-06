@@ -1,4 +1,5 @@
 
+import math
 import re
 from typing import Any
 
@@ -76,3 +77,34 @@ def validate_email_format(
                 })
 
     return issues
+
+def validate_numeric_range(
+    value: float,
+    field: str,
+    min_value: float | None = None,
+    max_value: float | None = None,
+    line: int | None = None,
+) -> str | None:
+    """Validate that a numeric value is within the allowed range."""
+
+    location = f"Line {line}, field '{field}'" if line else f"Field '{field}'"
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return f"{location}: value '{value}' is not numeric."
+
+    if not math.isfinite(value):
+        return f"{location}: value '{value}' is not finite."
+
+    if min_value is not None and value < min_value:
+        return (
+            f"{location}: value '{value}' is below "
+            f"the minimum allowed value ({min_value})."
+        )
+
+    if max_value is not None and value > max_value:
+        return (
+            f"{location}: value '{value}' exceeds "
+            f"the maximum allowed value ({max_value})."
+        )
+
+    return None
